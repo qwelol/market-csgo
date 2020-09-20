@@ -126,7 +126,7 @@ module.exports.getMarket = function(key, percent, msg, sendItems) {
 		request.loading('https://market.csgo.com/api/v2/test?key='+this._key, (data) => {
 			if (data.success && data.status.user_token && data.status.trade_check && data.status.site_online && data.status.site_notmpban) {
 				this._JsonLog('All status "true", go function GetInv()');
-				this._GetInv(); //
+				// this._GetInv(); //
 				this._GetItemsToGive(); //Смотрим есть ли проданные предметы
 			}
 		});

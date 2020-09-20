@@ -1,7 +1,9 @@
 const moduleMarket = require('./module/MarketCsgo.js');
 
-const key = 'M85bZ8hPufeqwf23f4j71irw29GEp'; //Получить ключ можно по ссылке: https://market.csgo.com/docs-v2
-const percent = 1; // % снижение стоимости предмета 
+const key = process.argv[2]; //Получить ключ можно по ссылке: https://market.csgo.com/docs-v2
+const percent = 0; // % снижение стоимости предмета 
+
+console.log("key",key,"percent",percent);
 
 const market = new moduleMarket.getMarket(key, percent, 
 	(msg, count) => {
