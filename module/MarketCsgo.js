@@ -3,12 +3,14 @@ const queue = new moduleQueue.getQueue('market', 10000, 1, true);
 const moduleRequest = require('./Request.js');
 const request = new moduleRequest.getRequest();
 
-module.exports.getMarket = function(key, percent, msg, sendItems) {
+
+module.exports.getMarket = function(key, percent, blackList, msg, sendItems) {
 	this._key = key;
 	this._percent = percent;
 	this._msg = msg;
 	this._balance = 0; //Баланс
 	this._sendItems = sendItems;
+	this._blackList = blackList;
 	
 	//Логи.
 	this._JsonLog = (obj) => {
@@ -103,7 +105,10 @@ module.exports.getMarket = function(key, percent, msg, sendItems) {
 		request.loading('https://market.csgo.com/api/v2/my-inventory/?key='+this._key, (data) => {
 			if (data.success && data.items && data.items.length>0) {
 				data.items.forEach((item) => {
-					this._BuyOffers(item)
+					if (this._blackList.indexOf(item.market_hash_name.trim()) === -1){
+						console.log("name:",item.market_hash_name,";");
+						this._BuyOffers(item)
+					}
 				})
 			} else {
 				this._UpdateInventory();
@@ -114,6 +119,7 @@ module.exports.getMarket = function(key, percent, msg, sendItems) {
 	this._GetItemsToGive = () => { 
 		request.loading('https://market.csgo.com/api/v2/trade-request-give-p2p-all?key='+this._key, (data) => {
 			if (data.success && data.offers && data.offers.length>0) {
+				console.log("offers",data.offers.length);
 				data.offers.forEach((offer) => {
 					this._JsonLog(offer);
 					this._sendItems(offer) //отправляем колбеком боту
@@ -126,7 +132,7 @@ module.exports.getMarket = function(key, percent, msg, sendItems) {
 		request.loading('https://market.csgo.com/api/v2/test?key='+this._key, (data) => {
 			if (data.success && data.status.user_token && data.status.trade_check && data.status.site_online && data.status.site_notmpban) {
 				this._JsonLog('All status "true", go function GetInv()');
-				// this._GetInv(); //
+				this._GetInv(); //
 				this._GetItemsToGive(); //Смотрим есть ли проданные предметы
 			}
 		});

@@ -1,0 +1,9 @@
+{
+    "login":"SteamLogin",
+    "password":"SteamPassword",
+    "key":"MarketCsgoApi",  //Получить ключ можно по ссылке: https://market.csgo.com/docs-v2
+    "percent":0 // % снижение стоимости предмета
+    "blacklist":[
+        
+    ]
+}
