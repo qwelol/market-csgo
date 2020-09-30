@@ -1,7 +1,7 @@
 const fs = require("fs");
 const SteamAuth = require("steamauth");
 
-module.exports.getAuth = async function (username, password) {
+module.exports.getAuth = function (username, password) {
   this._username = username;
   this._password = password;
 

@@ -3,7 +3,8 @@
     "password":"SteamPassword",
     "key":"MarketCsgoApi",  //Получить ключ можно по ссылке: https://market.csgo.com/docs-v2
     "percent":0 // % снижение стоимости предмета
+    "changePriseInterval":60 // интервал снижения цены на предметы (в минутах)
     "blacklist":[
         
-    ]
+    ] //названия предметов, которые не нужно продавать
 }
