@@ -5,7 +5,7 @@ module.exports.getAuth = function (username, password) {
   this._username = username;
   this._password = password;
 
-  this.login = (cb) => {
+  this.login = () => {
     if (this._auth) {
       this._auth.login(
         {
@@ -16,7 +16,6 @@ module.exports.getAuth = function (username, password) {
         function (err, session) {
           if (err) console.log(err);
           console.log("logged to guard");
-          cb();
         }
       );
     }
@@ -24,16 +23,18 @@ module.exports.getAuth = function (username, password) {
 
   this.acceptConfirmation = () => {
     //confirmation
-    this._auth.getTradeConfirmations(function (err, trades) {
-      if (err) console.log(err);
-      if (trades) {
-        for (let i = 0; i < trades.length; i++) {
-          auth.acceptTradeConfirmation(trades[i].id, trades[i].key, (err) => {
-            if (err) console.log(err);
-          });
-        }
-      }
-      console.log("trades", trades);
+    this._auth.refresh(()=>{
+      this._auth.getTradeConfirmations(function (err, trades) {
+        if (err) console.log(err);
+        if (trades) {
+          for (let i = 0; i < trades.length; i++) {
+            auth.acceptTradeConfirmation(trades[i].id, trades[i].key, (err) => {
+              if (err) console.log(err);
+            });
+          }
+          console.log("trades", trades);
+        } 
+      });
     });
   };
 

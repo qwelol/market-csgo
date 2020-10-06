@@ -1,7 +1,7 @@
 const SteamID = require("steamid");
 const request = require("request");
 
-exports.createOffer = (sessionID, cookies, options, acceptOffer) => {
+exports.createOffer = (sessionID, cookies, options) => {
   let { partner, token, tradeoffermessage, items } = options;
   let sid = new SteamID("[U:1:" + partner + "]");
   partner = sid.getSteamID64();
@@ -52,13 +52,6 @@ exports.createOffer = (sessionID, cookies, options, acceptOffer) => {
     },
     (err, response, body) => {
       console.log("response", response.statusMessage, "body", body);
-      if (response.statusCode === 200) {
-        try {
-          acceptOffer();
-        } catch (e) {
-          console.log("falled to accept confirmation because ", e.message);
-        }
-      }
     }
   );
 };
