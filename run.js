@@ -3,7 +3,7 @@ const moduleMarket = require("./module/MarketCsgo.js");
 const moduleAuth = require("./module/Auth");
 const { createOffer } = require("./module/Offers");
 const moduleQueue = require("./module/Queue.js");
-const queue = new moduleQueue.getQueue("offers", 10000, 1, true);
+const queue = new moduleQueue.getQueue("offers", 100000, 1, true);
 const config = require("./config.json");
 
 const {
@@ -18,7 +18,7 @@ console.log("key", key, "percent", percent);
 
 try {
   //log to guard
-  moduleAuth.getAuth(login, password);
+  moduleAuth.getAuth(login);
 } catch (err) {
   console.log("Не удалось выполнить вход \nПричина:", err.message);
 }
@@ -32,9 +32,14 @@ let logOnOptions = {
 };
 client.logOn(logOnOptions);
 
+client.on("disconnected", (eresult, msg) => {
+  console.log("Disconected from Steam because ", msg);
+  return 0;
+});
+
 client.on("webSession", (sessionID, cookies) => {
   console.log("session", sessionID);
-  setTimeout(moduleAuth.login, 120000);
+  moduleAuth.setCookies(cookies);
   const market = new moduleMarket.getMarket(
     key,
     percent,
@@ -55,6 +60,6 @@ client.on("webSession", (sessionID, cookies) => {
       }
     }
   );
+  setInterval(moduleAuth.acceptConfirmations, 100*1000);
   market.StartOfSales();
-  setInterval(moduleAuth.acceptConfirmation, 100*1000);
 });

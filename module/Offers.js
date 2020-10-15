@@ -51,7 +51,9 @@ exports.createOffer = (sessionID, cookies, options) => {
       },
     },
     (err, response, body) => {
-      console.log("response", response.statusMessage, "body", body);
+      if (response) {
+        console.log("response", response.statusMessage, "body", body);
+      }
     }
   );
 };
