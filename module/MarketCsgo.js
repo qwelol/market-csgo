@@ -7,6 +7,7 @@ module.exports.getMarket = function (
   key,
   percent,
   changePriseInterval,
+  addToSale,
   blackList,
   msg,
   sendItems
@@ -18,6 +19,7 @@ module.exports.getMarket = function (
   this._balance = 0; //Баланс
   this._sendItems = sendItems;
   this._blackList = blackList;
+  this.addToSale = addToSale;
 
   //Логи.
   this._JsonLog = (obj) => {
@@ -214,7 +216,9 @@ module.exports.getMarket = function (
           data.status.site_notmpban
         ) {
           this._JsonLog('All status "true", go function GetInv()');
-          this._GetInv(); //
+          if (addToSale) {
+            this._GetInv(); //
+          }
           this._GetItemsToGive(); //Смотрим есть ли проданные предметы
         }
       }
@@ -251,7 +255,6 @@ module.exports.getMarket = function (
     setInterval(this._GetMoney, 300000); // Смотрим баланс
     if (percent >= 1) {
       let int = changePriseInterval * 60 * 1000;
-      console.log("int", int);
       setInterval(this._GetItems, int); //раз в int - % от цены
     }
   };

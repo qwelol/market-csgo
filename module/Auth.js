@@ -1,44 +1,55 @@
 const fs = require("fs");
-const SteamAuth = require("steamauth");
+const SteamCommunity = require("steamcommunity");
+const SteamTotp = require("steam-totp");
+const moduleQueue = require("./Queue.js");
+const queue = new moduleQueue.getQueue("confirmations", 10000, 1, true);
 
-module.exports.getAuth = function (username, password) {
+module.exports.getAuth = function (username) {
   this._username = username;
-  this._password = password;
-
-  this.login = (cb) => {
-    if (this._auth) {
-      this._auth.login(
-        {
-          username: this._username,
-          password: this._password,
-          twofactorcode: this._auth.calculateCode(),
-        },
-        function (err, session) {
-          if (err) console.log(err);
-          console.log("logged to guard");
-          cb();
+  this._loggedIn = false;
+  this._shared_secret = null;
+  this._identity_secret = null;
+  this._community = null;
+  this.acceptConfirmations = () => {
+    //confirmation
+    let time = parseInt((new Date().getTime() / 1000).toFixed(0));
+    let keyTTP = SteamTotp.getConfirmationKey(
+      this._identity_secret,
+      time,
+      "conf"
+    );
+    if (this._loggedIn) {
+      this._community.getConfirmations(time, keyTTP, (err, confirmations) => {
+        if (err) console.log(err);
+        if (confirmations && confirmations.length) {
+          console.log("confirmations", confirmations);
+          for (let i = 0; i < confirmations.length; i++) {
+            queue.queuePush(() => {
+              this._community.acceptConfirmationForObject(
+                this._identity_secret,
+                confirmations[i].offerID,
+                (err) => {
+                  if (err) console.log(err);
+                }
+              );
+            });
+          }
         }
-      );
+      });
     }
   };
 
-  this.acceptConfirmation = () => {
-    //confirmation
-    this._auth.getTradeConfirmations(function (err, trades) {
-      if (err) console.log(err);
-      if (trades) {
-        for (let i = 0; i < trades.length; i++) {
-          auth.acceptTradeConfirmation(trades[i].id, trades[i].key, (err) => {
-            if (err) console.log(err);
-          });
-        }
-      }
-      console.log("trades", trades);
-    });
+  this.calculateCode = () => {
+    return SteamTotp.getAuthCode(this._shared_secret);
   };
 
-  this.calculateCode = () => {
-    return this._auth.calculateCode();
+  this.setCookies = (cookies) => {
+    this._community.setCookies(cookies);
+    this._community.loggedIn((err, loggedIn) => {
+      if (err) throw err;
+      this._loggedIn = loggedIn;
+      if (!loggedIn) throw new Error("Module market are not logged in");
+    });
   };
 
   let data = [];
@@ -64,12 +75,9 @@ module.exports.getAuth = function (username, password) {
   if (!usr) throw new Error("Не найден maFile для " + this._username);
   // console.log("usr", usr);
   // create auth for current usr
-  const { shared_secret, device_id, identity_secret } = usr;
-  const auth = new SteamAuth({
-    deviceid: device_id,
-    shared_secret,
-    identity_secret,
-  });
-  this._auth = auth;
+  const { shared_secret, identity_secret } = usr;
+  this._shared_secret = shared_secret;
+  this._identity_secret = identity_secret;
+  this._community = new SteamCommunity();
   console.log("auth config");
 };
