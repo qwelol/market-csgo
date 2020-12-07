@@ -12,15 +12,17 @@ const {
   key,
   percent,
   changePriseInterval,
+  addToSale,
+  acceptingInterval,
   blacklist,
 } = config;
 console.log("key", key, "percent", percent);
-
 try {
   //log to guard
   moduleAuth.getAuth(login);
 } catch (err) {
   console.log("Не удалось выполнить вход \nПричина:", err.message);
+  return 0;
 }
 
 let client = new SteamUser();
@@ -44,6 +46,7 @@ client.on("webSession", (sessionID, cookies) => {
     key,
     percent,
     changePriseInterval,
+    addToSale,
     blacklist,
     (msg, count) => {
       console.log(msg, count);
@@ -53,13 +56,12 @@ client.on("webSession", (sessionID, cookies) => {
       // console.log(JSON.stringify(trade, null, 2));
       //getTradeOffer(trade); отправляем трейд
       try {
-        // пушить офферы в очередь, подтверждение офферов засунуть в интервал ( каждые 2 мин)
         queue.queuePush(()=>{createOffer(sessionID, cookies, trade)});
       } catch (e) {
         console.log("Faled to create offer because ", e.message);
       }
     }
   );
-  setInterval(moduleAuth.acceptConfirmations, 100*1000);
+  setInterval(moduleAuth.acceptConfirmations, acceptingInterval*1000);
   market.StartOfSales();
 });
